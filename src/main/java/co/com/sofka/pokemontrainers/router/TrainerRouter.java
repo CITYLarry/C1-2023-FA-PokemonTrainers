@@ -1,6 +1,7 @@
 package co.com.sofka.pokemontrainers.router;
 
 import co.com.sofka.pokemontrainers.domain.dto.TrainerDTO;
+import co.com.sofka.pokemontrainers.usecases.DeleteTrainerUseCase;
 import co.com.sofka.pokemontrainers.usecases.GetAllTrainersUseCase;
 import co.com.sofka.pokemontrainers.usecases.GetTrainerByIdUseCase;
 import co.com.sofka.pokemontrainers.usecases.SaveTrainerUseCase;
@@ -34,7 +35,7 @@ public class TrainerRouter {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> getPokemonById(GetTrainerByIdUseCase getTrainerByIdUseCase) {
+    public RouterFunction<ServerResponse> getTrainerById(GetTrainerByIdUseCase getTrainerByIdUseCase) {
         return route(
                 GET("/trainers/{trnrId}"),
                 request -> getTrainerByIdUseCase.getTrainer(request.pathVariable("trnrId"))
@@ -61,7 +62,7 @@ public class TrainerRouter {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> updatePokemon(UpdateTrainerUseCase updateTrainerUseCase) {
+    public RouterFunction<ServerResponse> updateTrainer(UpdateTrainerUseCase updateTrainerUseCase) {
         return route(
                 PUT("/trainers/{trnrId}").and(accept(MediaType.APPLICATION_JSON)),
                 request -> request.bodyToMono(TrainerDTO.class)
@@ -72,6 +73,21 @@ public class TrainerRouter {
                                 .onErrorResume(throwable -> ServerResponse.badRequest()
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .bodyValue(throwable.getMessage())))
+        );
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> deleteTrainer(DeleteTrainerUseCase deleteTrainerUseCase) {
+        return route(
+                DELETE("/trainers/{trnrId}"),
+                request -> deleteTrainerUseCase.delete(request.pathVariable("trnrId"))
+                        .thenReturn(ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue("Deleted trainer with id: " + request.pathVariable("trnrId")))
+                        .flatMap(response -> response)
+                        .onErrorResume(throwable -> ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(throwable.getMessage()))
         );
     }
 }

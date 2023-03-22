@@ -4,6 +4,7 @@ import co.com.sofka.pokemontrainers.domain.dto.TrainerDTO;
 import co.com.sofka.pokemontrainers.usecases.GetAllTrainersUseCase;
 import co.com.sofka.pokemontrainers.usecases.GetTrainerByIdUseCase;
 import co.com.sofka.pokemontrainers.usecases.SaveTrainerUseCase;
+import co.com.sofka.pokemontrainers.usecases.UpdateTrainerUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -56,6 +57,21 @@ public class TrainerRouter {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .bodyValue(result))
                                 .onErrorResume(throwable -> ServerResponse.badRequest().build()))
+        );
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> updatePokemon(UpdateTrainerUseCase updateTrainerUseCase) {
+        return route(
+                PUT("/trainers/{trnrId}").and(accept(MediaType.APPLICATION_JSON)),
+                request -> request.bodyToMono(TrainerDTO.class)
+                        .flatMap(trainerDTO -> updateTrainerUseCase.update(request.pathVariable("trnrId"), trainerDTO)
+                                .flatMap(result -> ServerResponse.ok()
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .bodyValue(result))
+                                .onErrorResume(throwable -> ServerResponse.badRequest()
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .bodyValue(throwable.getMessage())))
         );
     }
 }

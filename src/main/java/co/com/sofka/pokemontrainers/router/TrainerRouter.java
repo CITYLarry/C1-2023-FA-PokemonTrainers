@@ -2,6 +2,7 @@ package co.com.sofka.pokemontrainers.router;
 
 import co.com.sofka.pokemontrainers.domain.dto.TrainerDTO;
 import co.com.sofka.pokemontrainers.usecases.GetAllTrainersUseCase;
+import co.com.sofka.pokemontrainers.usecases.GetTrainerByIdUseCase;
 import co.com.sofka.pokemontrainers.usecases.SaveTrainerUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,20 @@ public class TrainerRouter {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(BodyInserters.fromPublisher(getAllTrainersUseCase.getAll(), TrainerDTO.class))
                         .onErrorResume(throwable -> ServerResponse.noContent().build())
+        );
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> getPokemonById(GetTrainerByIdUseCase getTrainerByIdUseCase) {
+        return route(
+                GET("/trainers/{trnrId}"),
+                request -> getTrainerByIdUseCase.getTrainer(request.pathVariable("trnrId"))
+                        .flatMap(trainerDTO -> ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(trainerDTO))
+                        .onErrorResume(throwable -> ServerResponse.badRequest()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(throwable.getMessage()))
         );
     }
 

@@ -1,10 +1,12 @@
 package co.com.sofka.pokemontrainers.router;
 
 import co.com.sofka.pokemontrainers.domain.dto.TrainerDTO;
+import co.com.sofka.pokemontrainers.usecases.GetAllTrainersUseCase;
 import co.com.sofka.pokemontrainers.usecases.SaveTrainerUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -17,6 +19,17 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 
 @Configuration
 public class TrainerRouter {
+
+    @Bean
+    public RouterFunction<ServerResponse> getAllTrainers(GetAllTrainersUseCase getAllTrainersUseCase) {
+        return route(
+                GET("/trainers"),
+                request -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromPublisher(getAllTrainersUseCase.getAll(), TrainerDTO.class))
+                        .onErrorResume(throwable -> ServerResponse.noContent().build())
+        );
+    }
 
     @Bean
     public RouterFunction<ServerResponse> saveTrainer(SaveTrainerUseCase saveTrainerUseCase) {

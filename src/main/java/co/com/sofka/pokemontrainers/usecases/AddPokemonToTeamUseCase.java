@@ -26,6 +26,7 @@ public class AddPokemonToTeamUseCase implements IAddPokemonToTeam {
                     trainer.setPokemonTeam(pokemonInTeam);
                     return trainerRepository.save(trainer);
                 })
+                .onErrorResume(Mono::error)
                 .subscribe();
     }
 }

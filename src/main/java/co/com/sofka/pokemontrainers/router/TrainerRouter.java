@@ -6,12 +6,16 @@ import co.com.sofka.pokemontrainers.usecases.GetAllTrainersUseCase;
 import co.com.sofka.pokemontrainers.usecases.GetTrainerByIdUseCase;
 import co.com.sofka.pokemontrainers.usecases.SaveTrainerUseCase;
 import co.com.sofka.pokemontrainers.usecases.UpdateTrainerUseCase;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+
+import java.util.List;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.DELETE;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
@@ -57,7 +61,20 @@ public class TrainerRouter {
                                 .flatMap(result -> ServerResponse.status(201)
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .bodyValue(result))
-                                .onErrorResume(throwable -> ServerResponse.badRequest().build()))
+                                .onErrorResume(throwable -> {
+                                    if (throwable instanceof ConstraintViolationException ex) {
+                                        List<String> errors = ex.getConstraintViolations().stream()
+                                                .map(ConstraintViolation::getMessage)
+                                                .toList();
+                                        return ServerResponse.badRequest()
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .bodyValue(errors);
+                                    } else {
+                                        return ServerResponse.badRequest()
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .bodyValue(throwable.getMessage());
+                                    }
+                                }))
         );
     }
 
@@ -70,9 +87,20 @@ public class TrainerRouter {
                                 .flatMap(result -> ServerResponse.ok()
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .bodyValue(result))
-                                .onErrorResume(throwable -> ServerResponse.badRequest()
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .bodyValue(throwable.getMessage())))
+                                .onErrorResume(throwable -> {
+                                    if (throwable instanceof ConstraintViolationException ex) {
+                                        List<String> errors = ex.getConstraintViolations().stream()
+                                                .map(ConstraintViolation::getMessage)
+                                                .toList();
+                                        return ServerResponse.badRequest()
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .bodyValue(errors);
+                                    } else {
+                                        return ServerResponse.badRequest()
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .bodyValue(throwable.getMessage());
+                                    }
+                                }))
         );
     }
 

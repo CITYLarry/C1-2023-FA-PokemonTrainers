@@ -56,7 +56,7 @@ class AddPokemonToTeamUseCaseTest {
 
         PokemonDTO pokemonDTO = new PokemonDTO("testId", "testNmbr", "testName", "testNick", List.of("testType"), true);
 
-        //addPokemonToTeamUseCase.addToBelt("testId", pokemonDTO);
+        addPokemonToTeamUseCase.addToBelt("testId", pokemonDTO);
 
         StepVerifier.create(trainerRepository.save(t2))
                 .expectNextMatches(trainer -> trainer.getPokemonTeam().size() == 1 &&
